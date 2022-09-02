@@ -1,3 +1,4 @@
+require("dotenv").config()
 const express = require('express');
 const route = require('./routes/routes.js')
 
@@ -6,7 +7,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use("/api",route(express))
 
-app.listen(3000, () => {
+const port = process.env.PORT
+app.listen(port, () => {
     console.log('Success running http://localhost:3000')
 })
 

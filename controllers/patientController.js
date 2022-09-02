@@ -2,19 +2,26 @@ const {patient, users, Sequelize} = require("./../models")
 const Op = Sequelize.Op
 let self = {}
 
-self.getAll = async (req,res) => {
+self.getAll = (req,res) => {
     try{
-        let data = await patient.findAll({
-            attributes:["id","name","alamat","phone"],
-            include:[{
-                model:users,
-                as:'user',
-                attributes:["id","name"]}
-            ]
-        })
-        return res.status(200).json({
-            status:"ok",
-            data:data
+        jwt.verify(req.token, 'secretkey', async (err,authData)=>{
+            if(err){
+                res.sendStatus(403)
+            } else {
+                let data = await patient.findAll({
+                    attributes:["id","name","alamat","phone"],
+                    include:[{
+                        model:users,
+                        as:'user',
+                        attributes:["id","name"]}
+                    ]
+                })
+                return res.status(200).json({
+                    status:"ok",
+                    data:data,
+                    authData
+                })
+            }
         })
     } catch(error){
         res.status(500).json({
@@ -23,22 +30,29 @@ self.getAll = async (req,res) => {
     }
 }
     
-self.get = async (req,res) => {
+self.get = (req,res) => {
     try{
-        let id = req.params.id
-        let data = await patient.findOne({
-            attributes:["id","name","alamat","phone"],
-            include:[{
-                model:users,
-                as:'user',
-                attributes:["id","name"]
+        jwt.verify(req.token, 'secretkey', async (err,authData)=>{
+            if(err){
+                res.sendStatus(403)
+            } else {
+                let id = req.params.id
+                let data = await patient.findOne({
+                    attributes:["id","name","alamat","phone"],
+                    include:[{
+                        model:users,
+                        as:'user',
+                        attributes:["id","name"]
+                    }], where:{
+                        id:id
+                    }
+                })
+                return res.status(200).json({
+                    status:"ok",
+                    data:data,
+                    authData
+                })
             }
-        ], where:{
-            id:id
-        }})
-        return res.status(200).json({
-            status:"ok",
-            data:data
         })
     } catch(error){
         res.status(500).json({
@@ -47,9 +61,13 @@ self.get = async (req,res) => {
     }
 }
    
-self.search = async (req,res) => {
+self.search = (req,res) => {
     try{
-        let text = req.params.name
+        jwt.verify(req.token, 'secretkey', async (err,authData)=>{
+            if(err) {
+                res.sendStatus(403)
+            } else {
+                let text = req.params.name
         let data = await patient.findAll({
             attributes:["id","name","alamat","phone"],
             include:[{
@@ -70,8 +88,9 @@ self.search = async (req,res) => {
     })
     return res.status(200).json({
         status:"ok",
-        data:data
-    })
+        data:data,
+        authData
+    })}})
     } catch(error){
         res.status(500).json({
         status:"error",
@@ -82,11 +101,45 @@ self.search = async (req,res) => {
    
 self.add = async (req,res) => {
     try{
-        let body = req.body
-        let data = await patient.create(body)
-        return res.status(200).json({
-            status:"ok",
-            data:data
+        jwt.verify(req.token, 'secretkey', async (err,authData)=>{
+            if(err){
+                res.sendStatus(403)
+            } else {
+                let body = req.body
+                let data = await patient.create(body)
+                return res.status(200).json({
+                    status:"ok",
+                    data:data,
+                    authData})
+                }
+            })
+    } catch(error){
+        res.status(500).json({
+            status:"error",
+            data:error
+        })
+    }
+}
+   
+self.update = (req,res) => {
+    try{
+        jwt.verify(req.token, 'secretkey', async (err,authData)=>{
+            if(err){
+                res.sendStatus(403)
+            } else {
+                let id = req.params.id
+                let body = req.body
+                let data = await patient.update(body, {
+                    where:{
+                        id:id
+                    }
+                })
+                return res.status(200).json({
+                    status:"ok",
+                    data:data,
+                    authData
+                })
+            }
         })
     } catch(error){
         res.status(500).json({
@@ -96,38 +149,23 @@ self.add = async (req,res) => {
     }
 }
    
-self.update = async (req,res) => {
+self.delete = (req,res) => {
     try{
-        let id = req.params.id
-        let body = req.body
-        let data = await patient.update(body, {
-            where:{
-                id:id
+        jwt.verify(req.token, 'secretkey', async (err,authData)=>{
+            if(err) {
+                res.sendStatus(403)
+            } else {
+                let id = req.params.id
+                let data = await patient.destroy({
+                    where:{
+                        id:id
+                    }
+                })
+                return res.status(200).json({
+                    status:"ok",
+                    data:data
+                })
             }
-        })
-        return res.status(200).json({
-            status:"ok",
-            data:data
-        })
-    } catch(error){
-        res.status(500).json({
-            status:"error",
-            data:error
-        })
-    }
-}
-   
-self.delete = async (req,res) => {
-    try{
-        let id = req.params.id
-        let data = await patient.destroy({
-            where:{
-                id:id
-            }
-        })
-        return res.status(200).json({
-            status:"ok",
-            data:data
         })
     } catch(error){
         res.status(500).json({
@@ -137,4 +175,4 @@ self.delete = async (req,res) => {
     }
 }
 
-module.exports = self;
+module.exports = self

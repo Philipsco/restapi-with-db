@@ -1,24 +1,36 @@
 const users = require("./../controllers/userController.js")
 const patient = require("./../controllers/patientController.js")
 
+const verifyToken=(req,res,next)=>{
+    const bearHeader = req.headers['authorization']
+    if(typeof bearHeader !== "undefined"){
+        const bearToken = bearHeader.split(' ')[1]
+        req.token = bearToken
+        next()
+    } else {
+        res.sendStatus(403)
+    }
+}
+
 module.exports = function(express) {
     const route = express.Router()
     
-    route.get("/users",users.getAll)
-    route.get("/users/:id",users.get)
-    route.get("/users_search/:name",users.search)
-    route.post("/users",users.add)
-    route.put("/users/:id",users.update)
-    route.delete("/users/:id",users.delete)
-    route.get("/users_with_patient",users.getWithPatientAdmin)
-    route.get("/users/:id/patient",users.getWithPatientUser)
+    route.get("/users",verifyToken,users.getAll)
+    route.get("/users/:id",verifyToken,users.get)
+    route.get("/users_search/:name",verifyToken,users.search)
+    route.post("/users",verifyToken,users.add)
+    route.put("/users/:id",verifyToken,users.update)
+    route.delete("/users/:id",verifyToken,users.delete)
+    route.get("/users_with_patient",verifyToken,users.getWithPatientAdmin)
+    route.get("/users/:id/patient",verifyToken,users.getWithPatientUser)
  
-    route.get("/patient",patient.getAll)
-    route.get("/patient/:id",patient.get)
-    route.get("/patient_search/:name",patient.search)
-    route.post("/patient",patient.add)
-    route.put("/patient/:id",patient.update)
-    route.delete("/patient/:id",patient.delete)
+    route.get("/patient",verifyToken,patient.getAll)
+    route.get("/patient/:id",verifyToken,patient.get)
+    route.get("/patient_search/:name",verifyToken,patient.search)
+    route.post("/patient",verifyToken,patient.add)
+    route.put("/patient/:id",verifyToken,patient.update)
+    route.delete("/patient/:id",verifyToken,patient.delete)
 
+    route.post("/login", users.getLogin)
     return route
 }
