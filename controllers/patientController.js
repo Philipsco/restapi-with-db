@@ -1,5 +1,7 @@
 const {patient, users, Sequelize} = require("./../models")
 const Op = Sequelize.Op
+const jwt = require('jsonwebtoken')
+
 let self = {}
 
 self.getAll = (req,res) => {
